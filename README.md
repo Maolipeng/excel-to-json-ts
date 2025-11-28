@@ -49,6 +49,28 @@ pnpm lint
 - UI 仅暴露 `UiConfig`（模式/分组/叶子），内部通过 `uiConfigToTransformConfig` 自动生成 `headerMapping` / `groupLevels` / `leaf`，隐藏复杂度。
 - `buildFromConfig` 使用 `headerMapping` 匹配表头，按分组层级和叶子映射生成树或扁平数据，并统计行数/分组/叶子数量。
 
+## Docker 部署
+已提供 `Dockerfile`，基于 Node 20 + pnpm，多阶段构建 + Next `standalone` 输出。
+
+```bash
+# 构建镜像
+docker build -t excel-to-json .
+
+# 启动容器
+docker run -p 3000:3000 excel-to-json
+
+# 或指定环境变量
+docker run -e PORT=4000 -p 4000:4000 excel-to-json
+```
+
+### 一键脚本
+使用 `scripts/docker-up.sh` 一键构建/更新镜像并重启容器（默认端口 3000，可通过环境变量覆盖）：
+
+```bash
+chmod +x scripts/docker-up.sh
+PORT=4000 IMAGE_NAME=excel-to-json CONTAINER_NAME=excel-to-json ./scripts/docker-up.sh
+```
+
 ## 开发者备注
 - Node 版本：建议 ≥18。
 - 样式：Tailwind 4；组件在 `components/` 下，保持无状态 + 外部数据传入。
