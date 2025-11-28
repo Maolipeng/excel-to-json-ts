@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { Eye, Code2, Table, BarChart3 } from "lucide-react"
+import { Eye, Code2, Table, BarChart3, Loader2 } from "lucide-react"
 import type { ExcelData, TransformConfig } from "@/lib/types"
 import { buildFromConfig } from "@/lib/transformer"
 
@@ -10,9 +10,10 @@ interface PreviewPanelProps {
   selectedSheet: string
   config: TransformConfig | null
   currentStep: number
+  loading?: boolean
 }
 
-export function PreviewPanel({ excelData, selectedSheet, config, currentStep }: PreviewPanelProps) {
+export function PreviewPanel({ excelData, selectedSheet, config, currentStep, loading }: PreviewPanelProps) {
   const result = useMemo(() => {
     if (!excelData || !selectedSheet || currentStep < 3 || !config) return null
     const sheet = excelData.data[selectedSheet]
@@ -84,8 +85,17 @@ export function PreviewPanel({ excelData, selectedSheet, config, currentStep }: 
 
         {currentStep >= 3 && !result && (
           <div className="text-center py-8">
-            <Code2 className="mx-auto h-10 w-10 text-muted-foreground/50" />
-            <p className="mt-3 text-sm text-muted-foreground">选择模式、分组和叶子字段后查看转换结果</p>
+            {loading ? (
+              <>
+                <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary" />
+                <p className="mt-3 text-sm text-muted-foreground">正在准备预览，请稍候...</p>
+              </>
+            ) : (
+              <>
+                <Code2 className="mx-auto h-10 w-10 text-muted-foreground/50" />
+                <p className="mt-3 text-sm text-muted-foreground">选择模式、分组和叶子字段后查看转换结果</p>
+              </>
+            )}
           </div>
         )}
 

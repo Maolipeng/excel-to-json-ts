@@ -268,6 +268,7 @@ export default function Home() {
               selectedSheet={selectedSheet}
               config={transformConfig}
               currentStep={currentStep}
+              loading={loadingSheet !== null || isAdvancing}
             />
           </div>
         </div>
