@@ -1,7 +1,11 @@
 {
-  "name": "my-v0-project",
+  "name": "excel-to-json-ts",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "Maolipeng",
+    "email": "m384861046@gmail.com"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev",

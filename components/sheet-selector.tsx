@@ -22,6 +22,8 @@ export function SheetSelector({ sheets, selectedSheet, onSelectSheet, sheetData 
         {sheets.map((sheet) => {
           const data = sheetData[sheet]
           const isSelected = selectedSheet === sheet
+          const previewRows = data?.rows ?? data?.previewRows ?? []
+          const rowCount = data?.rows?.length ?? data?.totalRows ?? 0
 
           return (
             <button
@@ -45,7 +47,7 @@ export function SheetSelector({ sheets, selectedSheet, onSelectSheet, sheetData 
                   <div>
                     <p className="font-medium text-foreground">{sheet}</p>
                     <p className="text-sm text-muted-foreground">
-                      {data?.rows.length || 0} 行 · {data?.headers.length || 0} 列
+                      {rowCount} 行 · {data?.headers.length || 0} 列
                     </p>
                   </div>
                 </div>
@@ -65,6 +67,24 @@ export function SheetSelector({ sheets, selectedSheet, onSelectSheet, sheetData 
                       +{data.headers.length - 8} 更多
                     </span>
                   )}
+                </div>
+              )}
+
+              {previewRows.length > 0 && (
+                <div className="mt-3 overflow-x-auto rounded-md border border-border bg-muted/30">
+                  <table className="w-full text-xs">
+                    <tbody>
+                      {previewRows.slice(0, 2).map((row, idx) => (
+                        <tr key={idx} className="border-b border-border/70">
+                          {data.headers.slice(0, 4).map((h) => (
+                            <td key={h} className="px-2 py-1 text-muted-foreground truncate max-w-32">
+                              {String(row[h] ?? "")}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </button>

@@ -8,14 +8,15 @@ import { buildFromConfig } from "@/lib/transformer"
 interface PreviewPanelProps {
   excelData: ExcelData | null
   selectedSheet: string
-  config: TransformConfig
+  config: TransformConfig | null
   currentStep: number
 }
 
 export function PreviewPanel({ excelData, selectedSheet, config, currentStep }: PreviewPanelProps) {
   const result = useMemo(() => {
-    if (!excelData || !selectedSheet || currentStep < 3) return null
-    const rows = excelData.data[selectedSheet]?.rows || []
+    if (!excelData || !selectedSheet || currentStep < 3 || !config) return null
+    const sheet = excelData.data[selectedSheet]
+    const rows = sheet?.rows ?? sheet?.previewRows ?? []
     if (rows.length === 0 || config.leaf.fields.length === 0) return null
 
     try {
@@ -59,7 +60,7 @@ export function PreviewPanel({ excelData, selectedSheet, config, currentStep }: 
                       </tr>
                     </thead>
                     <tbody>
-                      {excelData.data[selectedSheet].rows.slice(0, 5).map((row, i) => (
+                      {(excelData.data[selectedSheet].rows ?? excelData.data[selectedSheet].previewRows).slice(0, 5).map((row, i) => (
                         <tr key={i} className="border-t border-border">
                           {excelData.data[selectedSheet].headers.slice(0, 5).map((h) => (
                             <td key={h} className="px-2 py-1.5 text-muted-foreground truncate max-w-24">
@@ -71,6 +72,11 @@ export function PreviewPanel({ excelData, selectedSheet, config, currentStep }: 
                     </tbody>
                   </table>
                 </div>
+                {!excelData.data[selectedSheet].rows && (
+                  <p className="bg-muted/30 px-3 py-2 text-xs text-muted-foreground border-t border-border">
+                    当前显示为前 50 行预览，导出前会按需加载完整数据
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -79,7 +85,7 @@ export function PreviewPanel({ excelData, selectedSheet, config, currentStep }: 
         {currentStep >= 3 && !result && (
           <div className="text-center py-8">
             <Code2 className="mx-auto h-10 w-10 text-muted-foreground/50" />
-            <p className="mt-3 text-sm text-muted-foreground">完成字段映射后查看转换结果</p>
+            <p className="mt-3 text-sm text-muted-foreground">选择模式、分组和叶子字段后查看转换结果</p>
           </div>
         )}
 

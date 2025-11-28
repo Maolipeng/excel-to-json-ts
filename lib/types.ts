@@ -1,12 +1,45 @@
 export interface SheetData {
   headers: string[]
-  rows: Record<string, unknown>[]
+  previewRows: Record<string, unknown>[]
+  rows?: Record<string, unknown>[]
+  totalRows: number
 }
 
 export interface ExcelData {
   fileName: string
+  fileSize: number
   sheets: string[]
   data: Record<string, SheetData>
+  fileBuffer: ArrayBuffer
+}
+
+export type UiMode = "flat" | "tree" | "pro"
+
+export interface UiGroupLevel {
+  name: string
+  keyColumn: string
+  labelColumn?: string
+  codeColumn?: string
+  childrenField?: string
+}
+
+export interface UiLeafField {
+  column: string
+  outputKey: string
+}
+
+export interface UiLeafConfig {
+  arrayField: string
+  dedupeBy?: string
+  fields: UiLeafField[]
+}
+
+export interface UiConfig {
+  name: string
+  tsExportName: string
+  mode: UiMode
+  groups: UiGroupLevel[]
+  leaf: UiLeafConfig
 }
 
 export interface ColumnMapping {
