@@ -71,6 +71,13 @@ chmod +x scripts/docker-up.sh
 PORT=4000 IMAGE_NAME=excel-to-json CONTAINER_NAME=excel-to-json ./scripts/docker-up.sh
 ```
 
+### Docker Overview（用于 Hub 描述）
+- 作用：前端可视化工具，将 Excel/CSV 转成 JSON/TS 或 `dealer.config.js`，纯前端解析，无需后端。
+- 特性：懒加载大文件、平铺/树形模式、分组层级/叶子字段可视化配置、实时预览与统计、导出 JSON/TS/配置。
+- 构建：多阶段 Dockerfile，基于 Node 20 + pnpm，Next `standalone` 输出。
+- 运行：默认端口 3000，环境变量 `PORT` 可改；镜像标签例 `excel-to-json:latest`。
+- 脚本：`scripts/docker-up.sh` 一键构建并更新容器。
+
 ## 开发者备注
 - Node 版本：建议 ≥18。
 - 样式：Tailwind 4；组件在 `components/` 下，保持无状态 + 外部数据传入。

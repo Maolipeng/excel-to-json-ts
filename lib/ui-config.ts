@@ -19,6 +19,13 @@ export function uiConfigToTransformConfig(ui: UiConfig, headers: string[]): Tran
   const headerMapping: TransformConfig["headerMapping"] = {}
   const columnToLogical = new Map<string, string>()
   const outputKeyToLogical = new Map<string, string>()
+  const slugCounter = new Map<string, number>()
+
+  const nextLogical = (base: string) => {
+    const count = slugCounter.get(base) || 0
+    slugCounter.set(base, count + 1)
+    return count === 0 ? base : `${base}_${count}`
+  }
 
   const register = (logical: string, column: string, required = true) => {
     if (!headerMapping[logical]) {
@@ -31,7 +38,8 @@ export function uiConfigToTransformConfig(ui: UiConfig, headers: string[]): Tran
   const ensureLogicalForColumn = (column: string, hint: string, required = true) => {
     const existing = columnToLogical.get(column)
     if (existing) return existing
-    const logical = slugify(hint || column, "col")
+    const base = slugify(hint || column, "col")
+    const logical = nextLogical(base)
     return register(logical, column, required)
   }
 
