@@ -40,9 +40,40 @@ export function ExportPanel({ config, data }: ExportPanelProps) {
   const currentOutput = activeTab === "json" ? jsonOutput : activeTab === "ts" ? tsOutput : configOutput
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(currentOutput)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const doSetCopied = () => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(currentOutput).then(doSetCopied).catch(() => {
+          // fallback below
+          fallbackCopy()
+        })
+        return
+      }
+      fallbackCopy()
+    } catch {
+      fallbackCopy()
+    }
+
+    function fallbackCopy() {
+      try {
+        const textarea = document.createElement("textarea")
+        textarea.value = currentOutput
+        textarea.style.position = "fixed"
+        textarea.style.opacity = "0"
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textarea)
+        doSetCopied()
+      } catch {
+        // ignore if copy fails
+      }
+    }
   }
 
   const downloadFile = () => {
