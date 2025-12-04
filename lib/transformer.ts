@@ -1,19 +1,45 @@
 import type { TransformConfig } from "./types"
 
+const normalize = (value: string) => String(value).trim().toLowerCase()
+const compact = (value: string) => normalize(value).replace(/[^a-z0-9]/g, "")
+
+function matchScore(header: string, candidate: string): number {
+  const hNorm = normalize(header)
+  const cNorm = normalize(candidate)
+  if (!cNorm) return 0
+  if (hNorm === cNorm) return 3
+
+  const hCompact = compact(header)
+  const cCompact = compact(candidate)
+  if (hCompact === cCompact) return 2
+
+  if (hNorm.includes(cNorm) || hCompact.includes(cCompact)) return 1
+  return 0
+}
+
 export function detectHeaders(rows: Record<string, unknown>[], config: TransformConfig): Record<string, string> {
   const headers = Object.keys(rows[0] || {})
   const map: Record<string, string> = {}
 
   for (const [logical, rule] of Object.entries(config.headerMapping)) {
-    let found: string | null = null
+    let bestHeader: string | null = null
+    let bestScore = 0
+
     for (const header of headers) {
-      const h = String(header).trim().toLowerCase()
-      if (rule.candidates.some((c) => h.includes(String(c).toLowerCase()))) {
-        found = header
-        break
+      for (const candidate of rule.candidates) {
+        const score = matchScore(header, candidate)
+        if (score > bestScore) {
+          bestScore = score
+          bestHeader = header
+          if (score === 3) break
+        }
       }
+      if (bestScore === 3) break
     }
-    if (found) map[logical] = found
+
+    if (bestHeader) {
+      map[logical] = bestHeader
+    }
   }
   return map
 }

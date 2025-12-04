@@ -147,29 +147,51 @@ function resolveSheets(workbook, sheetOption) {
 
 // ======================== HEADER DETECTOR ========================
 
+const normalize = (value) => String(value).trim().toLowerCase();
+const compact = (value) => normalize(value).replace(/[^a-z0-9]/g, "");
+
+function matchScore(header, candidate) {
+    const hNorm = normalize(header);
+    const cNorm = normalize(candidate);
+    if (!cNorm) return 0;
+    if (hNorm === cNorm) return 3;
+
+    const hCompact = compact(header);
+    const cCompact = compact(candidate);
+    if (hCompact === cCompact) return 2;
+
+    if (hNorm.includes(cNorm) || hCompact.includes(cCompact)) return 1;
+    return 0;
+}
+
 function detectHeaders(rows, config) {
     const headers = Object.keys(rows[0] || {});
     const map = {};
 
     for (const [logical, rule] of Object.entries(config.headerMapping)) {
-        let found = null;
+        let bestHeader = null;
+        let bestScore = 0;
 
         for (const header of headers) {
-            const h = String(header).trim().toLowerCase();
-            if (rule.candidates.some(c => h.includes(String(c).toLowerCase()))) {
-                found = header;
-                break;
+            for (const candidate of rule.candidates) {
+                const score = matchScore(header, candidate);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestHeader = header;
+                    if (score === 3) break;
+                }
             }
+            if (bestScore === 3) break;
         }
 
-        if (!found && rule.required) {
+        if (!bestHeader && rule.required) {
             console.error('❌ 表头匹配失败:', logical);
             console.error('   候选:', rule.candidates.join(', '));
             console.error('   当前表头:', headers.join(' | '));
             throw new Error(`无法在表头中匹配字段: ${logical}`);
         }
 
-        if (found) map[logical] = found;
+        if (bestHeader) map[logical] = bestHeader;
     }
     return map;
 }
