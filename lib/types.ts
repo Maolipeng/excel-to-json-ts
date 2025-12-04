@@ -15,12 +15,20 @@ export interface ExcelData {
 
 export type UiMode = "flat" | "tree" | "pro"
 
+export interface UiGroupField {
+  column: string
+  outputKey: string
+}
+
 export interface UiGroupLevel {
   name: string
   keyColumn: string
   labelColumn?: string
   codeColumn?: string
+  nameKey?: string
+  codeKey?: string
   childrenField?: string
+  extraFields?: UiGroupField[]
 }
 
 export interface UiLeafField {
@@ -53,8 +61,11 @@ export interface GroupLevel {
   keyField: string
   nameField?: string
   codeField?: string
+  nameKey?: string
+  codeKey?: string
   childrenKey: string
   nodeName: string
+  extraFields?: { from: string; to: string }[]
 }
 
 export interface LeafConfig {

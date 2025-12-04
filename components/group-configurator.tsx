@@ -13,6 +13,15 @@ interface GroupConfiguratorProps {
 
 const defaultChildren = ["children", "citys", "dealers"]
 
+const toCamel = (value: string) =>
+  value
+    .split(/[\s_\-]+/)
+    .map((seg, idx) => {
+      const lower = seg.toLowerCase()
+      return idx === 0 ? lower : lower.charAt(0).toUpperCase() + lower.slice(1)
+    })
+    .join("")
+
 export function GroupConfigurator({ mode, headers, groups, onChange, maxLevels = 3 }: GroupConfiguratorProps) {
   const canAdd = (mode === "tree" || mode === "pro") && groups.length < maxLevels
 
@@ -26,7 +35,10 @@ export function GroupConfigurator({ mode, headers, groups, onChange, maxLevels =
         keyColumn: headers[0] || "",
         labelColumn: headers[1] || headers[0] || "",
         codeColumn: headers[0] || "",
+        nameKey: "name",
+        codeKey: "code",
         childrenField: defaultChildren[Math.min(idx, defaultChildren.length - 1)] || "children",
+        extraFields: [],
       },
     ])
   }
@@ -35,6 +47,22 @@ export function GroupConfigurator({ mode, headers, groups, onChange, maxLevels =
     const next = [...groups]
     next[index] = { ...next[index], ...partial }
     onChange(next)
+  }
+
+  const toggleExtraField = (index: number, column: string) => {
+    const group = groups[index]
+    const extras = group.extraFields || []
+    const exists = extras.some((f) => f.column === column)
+    const nextExtras = exists ? extras.filter((f) => f.column !== column) : [...extras, { column, outputKey: toCamel(column) }]
+    updateGroup(index, { extraFields: nextExtras })
+  }
+
+  const updateExtraOutputKey = (index: number, column: string, value: string) => {
+    const group = groups[index]
+    const extras = group.extraFields || []
+    updateGroup(index, {
+      extraFields: extras.map((f) => (f.column === column ? { ...f, outputKey: value } : f)),
+    })
   }
 
   const removeGroup = (index: number) => {
@@ -149,6 +177,69 @@ export function GroupConfigurator({ mode, headers, groups, onChange, maxLevels =
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">名称输出键名</label>
+                  <input
+                    value={group.nameKey || "name"}
+                    onChange={(e) => updateGroup(index, { nameKey: e.target.value })}
+                    className="w-full rounded-md border border-border bg-input px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+                    placeholder="默认 name"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">Code 输出键名</label>
+                  <input
+                    value={group.codeKey || "code"}
+                    onChange={(e) => updateGroup(index, { codeKey: e.target.value })}
+                    className="w-full rounded-md border border-border bg-input px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+                    placeholder="默认 code"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-lg border border-border">
+                <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-2">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">额外字段</p>
+                    <p className="text-xs text-muted-foreground">为该层添加更多字段并自定义输出键名</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    已选 {(group.extraFields || []).length} 个
+                  </span>
+                </div>
+                <div className="max-h-64 divide-y divide-border overflow-auto">
+                  {headers.map((header) => {
+                    const selected = (group.extraFields || []).some((f) => f.column === header)
+                    const current = (group.extraFields || []).find((f) => f.column === header)
+                    return (
+                      <div key={header} className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:gap-3">
+                        <label className="flex items-center gap-2 text-sm text-foreground">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={() => toggleExtraField(index, header)}
+                            className="rounded border-border"
+                          />
+                          <span className="font-medium">{header}</span>
+                        </label>
+                        {selected && (
+                          <input
+                            value={current?.outputKey || ""}
+                            onChange={(e) => updateExtraOutputKey(index, header, e.target.value)}
+                            className="flex-1 rounded-md border border-border bg-input px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                            placeholder="输出字段名"
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                  {headers.length === 0 && (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">请先选择 Sheet 以加载表头</div>
+                  )}
                 </div>
               </div>
             </div>

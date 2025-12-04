@@ -115,15 +115,38 @@ export function buildFromConfig(
       }
 
       let record = currentMap.get(keyVal)
+      const nameKey = level.nameKey || "name"
+      const codeKey = level.codeKey || "code"
+
       if (!record) {
         record = {}
-        if (level.nameField) record.name = get(row, level.nameField)
-        if (level.codeField) record.code = get(row, level.codeField)
+        if (level.nameField) record[nameKey] = get(row, level.nameField)
+        if (level.codeField) record[codeKey] = get(row, level.codeField)
+        if (level.extraFields?.length) {
+          for (const f of level.extraFields) {
+            const val = get(row, f.from)
+            record[f.to] = val
+          }
+        }
         if (i < groupLevels.length - 1) {
           const childKey = level.childrenKey || "children"
           record[childKey] = new Map()
         }
         currentMap.set(keyVal, record)
+      }
+      // Ensure extra fields are populated even when node already exists
+      if (level.extraFields?.length) {
+        for (const f of level.extraFields) {
+          if (record[f.to] === undefined || record[f.to] === "") {
+            record[f.to] = get(row, f.from)
+          }
+        }
+      }
+      if (level.nameField && (record[nameKey] === undefined || record[nameKey] === "")) {
+        record[nameKey] = get(row, level.nameField)
+      }
+      if (level.codeField && (record[codeKey] === undefined || record[codeKey] === "")) {
+        record[codeKey] = get(row, level.codeField)
       }
       node = record
       if (i < groupLevels.length - 1) {
@@ -205,10 +228,14 @@ export function generateConfigCode(config: TransformConfig): string {
     .join(",\n")
 
   const groupLevelsStr = config.groupLevels
-    .map(
-      (g) =>
-        `    { keyField: "${g.keyField}", ${g.nameField ? `nameField: "${g.nameField}", ` : ""}${g.codeField ? `codeField: "${g.codeField}", ` : ""}childrenKey: "${g.childrenKey}", nodeName: "${g.nodeName}" }`,
-    )
+    .map((g) => {
+      const extras = g.extraFields?.length
+        ? `, extraFields: [${g.extraFields.map((f) => `{ from: "${f.from}", to: "${f.to}" }`).join(", ")}]`
+        : ""
+      const nameKey = g.nameKey ? `, nameKey: "${g.nameKey}"` : ""
+      const codeKey = g.codeKey ? `, codeKey: "${g.codeKey}"` : ""
+      return `    { keyField: "${g.keyField}", ${g.nameField ? `nameField: "${g.nameField}", ` : ""}${g.codeField ? `codeField: "${g.codeField}", ` : ""}childrenKey: "${g.childrenKey}", nodeName: "${g.nodeName}"${nameKey}${codeKey}${extras} }`
+    })
     .join(",\n")
 
   const leafFieldsStr = config.leaf.fields.map((f) => `      { from: "${f.from}", to: "${f.to}" }`).join(",\n")

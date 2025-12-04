@@ -54,13 +54,21 @@ export function uiConfigToTransformConfig(ui: UiConfig, headers: string[]): Tran
       ? register(`level${index + 1}Code`, group.codeColumn, false)
       : undefined
     const childrenKey = group.childrenField || (index === usedGroups.length - 1 ? ui.leaf.arrayField : "children")
+    const extraFields = (group.extraFields || []).map((field, extraIndex) => {
+      const hint = field.outputKey || field.column || `extra_${extraIndex + 1}`
+      const logical = ensureLogicalForColumn(field.column, `level${index + 1}_${hint}`, true)
+      return { from: logical, to: field.outputKey || hint }
+    })
 
     return {
       keyField,
       nameField,
       codeField,
+      nameKey: group.nameKey || "name",
+      codeKey: group.codeKey || "code",
       childrenKey,
       nodeName: group.name || `第${index + 1}级`,
+      extraFields,
     }
   })
 

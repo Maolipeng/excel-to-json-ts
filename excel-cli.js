@@ -256,6 +256,8 @@ function buildFromConfig(rows, config) {
         for (let i = 0; i < groupLevels.length; i++) {
             const level = groupLevels[i];
             const keyVal = get(row, level.keyField);
+            const nameKey = level.nameKey || 'name';
+            const codeKey = level.codeKey || 'code';
 
             if (!keyVal) {
                 valid = false;
@@ -266,13 +268,33 @@ function buildFromConfig(rows, config) {
 
             if (!record) {
                 record = {};
-                if (level.nameField) record.name = get(row, level.nameField);
-                if (level.codeField) record.code = get(row, level.codeField);
+                if (level.nameField) record[nameKey] = get(row, level.nameField);
+                if (level.codeField) record[codeKey] = get(row, level.codeField);
+                if (level.extraFields?.length) {
+                    level.extraFields.forEach(f => {
+                        record[f.to] = get(row, f.from);
+                    });
+                }
                 if (i < groupLevels.length - 1) {
                     const childKey = level.childrenKey || 'children';
                     record[childKey] = new Map();
                 }
                 currentMap.set(keyVal, record);
+            }
+
+            if (level.extraFields?.length) {
+                level.extraFields.forEach(f => {
+                    if (record[f.to] === undefined || record[f.to] === "") {
+                        record[f.to] = get(row, f.from);
+                    }
+                });
+            }
+
+            if (level.nameField && (record[nameKey] === undefined || record[nameKey] === "")) {
+                record[nameKey] = get(row, level.nameField);
+            }
+            if (level.codeField && (record[codeKey] === undefined || record[codeKey] === "")) {
+                record[codeKey] = get(row, level.codeField);
             }
 
             node = record;

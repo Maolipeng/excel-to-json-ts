@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
+import Link from "next/link"
 import * as XLSX from "xlsx"
 import { FileUploader } from "@/components/file-uploader"
 import { SheetSelector } from "@/components/sheet-selector"
@@ -137,14 +138,30 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <FileSpreadsheet className="h-5 w-5 text-primary-foreground" />
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                <FileSpreadsheet className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-foreground">Excel 数据转换器</h1>
+                <p className="text-sm text-muted-foreground">可视化配置 Excel 到结构化数据的转换</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">Excel 数据转换器</h1>
-              <p className="text-sm text-muted-foreground">可视化配置 Excel 到结构化数据的转换</p>
-            </div>
+            <nav className="flex items-center gap-2 text-sm">
+              <Link
+                href="/"
+                className="rounded-md px-3 py-1.5 text-foreground hover:bg-muted transition-colors"
+              >
+                数据转换
+              </Link>
+              <Link
+                href="/config-builder"
+                className="rounded-md px-3 py-1.5 text-foreground hover:bg-muted transition-colors"
+              >
+                配置生成
+              </Link>
+            </nav>
           </div>
         </div>
       </header>

@@ -8,6 +8,7 @@
 - 纯 UI 配置：选列 → 选分组层级（主键/名称/code/子节点字段名） → 选叶子字段/输出名/去重字段。
 - 实时预览与统计：右侧展示前几条 JSON、分组数量、跳过行数等。
 - 一键导出：JSON、TypeScript 数据，或生成 `dealer.config.js`（供 CLI/CI 使用）。
+- 独立配置页面：访问 `/config-builder` 通过表单可视化生成 `dealer.config.js`，直接复制或下载。
 
 ## 快速开始
 ```bash
